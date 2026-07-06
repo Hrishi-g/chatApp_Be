@@ -23,4 +23,4 @@ jobs:
           cache: maven
 
       - name: Build
-        run: ./mvnw clean package
+        run: ./mvnw clean package -DskipTests

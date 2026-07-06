@@ -4,19 +4,19 @@ spring:
   config:
     import: optional:file:.env[.properties]
   datasource:
-    url: jdbc:postgresql://localhost:5432/cryptx?currentSchema=chatApp
-    username: postgres
-    password: pass@123
-    driver-class-name: org.postgresql.Driver
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+    driver-class-name: ${DATASOURCE_DRIVER_CLASSNAME}
   jpa:
-    show-sql: true
-    generate-ddl: true
+    show-sql: ${JPA_HIBERNATE_SHOW_SQL}
+    generate-ddl: ${JPA_HIBERNATE_GENERATE_DDL}
     hibernate:
-      ddl-auto: update
-      default_schema: chatApp
+      ddl-auto: ${JPA_HIBERNATE_DDL_AUTO}
+      default_schema: ${DATASOURCE_SCHEMA}
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: ${JPA_HIBERNATE_DIALECT}
 
 jwt:
   secret: ${JWT_SECRET}
