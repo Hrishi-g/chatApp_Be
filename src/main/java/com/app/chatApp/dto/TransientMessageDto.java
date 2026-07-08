@@ -1,12 +1,15 @@
 package com.app.chatApp.dto;
 
-public class MessageDto {
+public class TransientMessageDto {
     private String sender;
     private String receiver;
     private String message;
     private long timeStamp;
 
-    public MessageDto(String sender, String receiver, String message) {
+    public TransientMessageDto() {
+    }
+
+    public TransientMessageDto(String sender, String receiver, String message) {
         this.sender = sender;
         this.receiver = receiver;
         this.message = message;

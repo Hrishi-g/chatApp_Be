@@ -7,7 +7,8 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import com.app.chatApp.dto.MessageDto;
+import com.app.chatApp.dto.TransientMessageDto;
+import com.app.chatApp.repository.MessagesRepo;
 import com.app.chatApp.service.OneTimeTicketService;
 
 import tools.jackson.databind.ObjectMapper;
@@ -17,8 +18,11 @@ public class ChatHandler extends TextWebSocketHandler {
 
     private final OneTimeTicketService ticketService;
 
-    ChatHandler(OneTimeTicketService ticketService) {
+    private MessagesRepo messagesRepo;
+
+    ChatHandler(OneTimeTicketService ticketService, MessagesRepo messagesRepo) {
         this.ticketService = ticketService;
+        this.messagesRepo = messagesRepo;
     }
 
     Map<String, WebSocketSession> users = new ConcurrentHashMap<>();
@@ -42,11 +46,13 @@ public class ChatHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String json = message.getPayload();
         ObjectMapper mapper = new ObjectMapper();
-        MessageDto msg = mapper.readValue(json, MessageDto.class);
+        TransientMessageDto msg = mapper.readValue(json, TransientMessageDto.class);
         String sender = msg.getSender();
         String receiver = msg.getReceiver();
         String sessionMblNo = (String) session.getAttributes().get("mblNo");
+        // MessageDto msgDto = new MessageDto();
         if (sessionMblNo != null && sessionMblNo.equals(sender)) {
+
             WebSocketSession receiverSession = users.get(receiver);
             if (receiverSession != null && receiverSession.isOpen()) {
                 receiverSession.sendMessage(new TextMessage(mapper.writeValueAsString(msg)));

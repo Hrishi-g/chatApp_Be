@@ -10,5 +10,4 @@ public class ChatAppApplication {
 		SpringApplication.run(ChatAppApplication.class, args);
 		System.out.println("Running!!!");
 	}
-
 }

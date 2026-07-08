@@ -1,36 +1,26 @@
 package com.app.chatApp.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.app.chatApp.dto.LoginDto;
-import com.app.chatApp.dto.SignupDto;
+import com.app.chatApp.dto.SecurityContextDto;
 import com.app.chatApp.service.UserService;
 
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-
 @RestController
-@RequestMapping("/auth/user")
+@RequestMapping("/user")
 public class UserController {
 
-    @Autowired
-    private UserService userSrc;
+    private UserService userService;
 
-    @PostMapping("/signup")
-    public ResponseEntity<String> signUp(@Valid @RequestBody SignupDto userDto) {
-        return userSrc.signUp(userDto);
+    UserController(UserService userService) {
+        this.userService = userService;
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestHeader("X-Client-Type") String clientType,
-            @RequestBody LoginDto userDto, HttpServletResponse httpResponse) {
-        System.out.println("X-Client-Type :" + clientType);
-        return userSrc.login(userDto, clientType, httpResponse);
+    @GetMapping("/chats")
+    public void getChats(@AuthenticationPrincipal SecurityContextDto userData) {
+        userService.getChats(userData.getMblNo());
     }
+
 }

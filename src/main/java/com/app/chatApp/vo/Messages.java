@@ -21,10 +21,10 @@ public class Messages {
     Long msgId;
     @ManyToOne
     @JoinColumn(name = "sender_id")
-    RegisteredUsers senderId;
+    RegisteredUsers sender;
     @ManyToOne
     @JoinColumn(name = "receiver_id")
-    RegisteredUsers receiverId;
+    RegisteredUsers receiver;
     String msg;
     @Enumerated(EnumType.STRING)
     MessageStatus status;
@@ -42,19 +42,19 @@ public class Messages {
     }
 
     public RegisteredUsers getSenderId() {
-        return senderId;
+        return sender;
     }
 
     public void setSenderId(RegisteredUsers senderId) {
-        this.senderId = senderId;
+        this.sender = senderId;
     }
 
     public RegisteredUsers getReceiverId() {
-        return receiverId;
+        return receiver;
     }
 
     public void setReceiverId(RegisteredUsers receiverId) {
-        this.receiverId = receiverId;
+        this.receiver = receiverId;
     }
 
     public String getMsg() {
@@ -107,7 +107,7 @@ public class Messages {
 
     @Override
     public String toString() {
-        return "Messages [msgId=" + msgId + ", senderId=" + senderId + ", receiverId=" + receiverId + ", msg=" + msg
+        return "Messages [msgId=" + msgId + ", senderId=" + sender + ", receiverId=" + receiver + ", msg=" + msg
                 + ", status=" + status + ", createdTime=" + createdTime + ", sentTime=" + sentTime + ", delieverdTime="
                 + delieverdTime + ", receiverTime=" + receiverTime + "]";
     }

@@ -38,7 +38,8 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/user/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/user/**").authenticated()
                         .requestMatchers("/secure/**").authenticated()
                         .requestMatchers("/ws/**", "/chat", "/chat/**", "/error").permitAll()
                         .anyRequest().authenticated())
