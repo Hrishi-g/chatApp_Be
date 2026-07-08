@@ -10,8 +10,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Messages {
@@ -19,12 +17,14 @@ public class Messages {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long msgId;
-    @ManyToOne
-    @JoinColumn(name = "sender_id")
-    RegisteredUsers sender;
-    @ManyToOne
-    @JoinColumn(name = "receiver_id")
-    RegisteredUsers receiver;
+    String sender;
+    String receiver;
+    // @ManyToOne
+    // @JoinColumn(name = "sender_id")
+    // RegisteredUsers sender;
+    // @ManyToOne
+    // @JoinColumn(name = "receiver_id")
+    // RegisteredUsers receiver;
     String msg;
     @Enumerated(EnumType.STRING)
     MessageStatus status;
@@ -37,24 +37,20 @@ public class Messages {
         return msgId;
     }
 
-    public void setMsgId(Long msgId) {
-        this.msgId = msgId;
-    }
-
-    public RegisteredUsers getSenderId() {
+    public String getSender() {
         return sender;
     }
 
-    public void setSenderId(RegisteredUsers senderId) {
-        this.sender = senderId;
+    public void setSender(String sender) {
+        this.sender = sender;
     }
 
-    public RegisteredUsers getReceiverId() {
+    public String getReceiver() {
         return receiver;
     }
 
-    public void setReceiverId(RegisteredUsers receiverId) {
-        this.receiver = receiverId;
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
     }
 
     public String getMsg() {

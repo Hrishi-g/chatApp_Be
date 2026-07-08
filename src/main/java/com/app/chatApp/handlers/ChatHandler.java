@@ -1,5 +1,6 @@
 package com.app.chatApp.handlers;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,8 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.app.chatApp.dto.TransientMessageDto;
 import com.app.chatApp.repository.MessagesRepo;
 import com.app.chatApp.service.OneTimeTicketService;
+import com.app.chatApp.vo.Messages;
+import com.app.chatApp.vo.enums.MessageStatus;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -47,21 +50,44 @@ public class ChatHandler extends TextWebSocketHandler {
         String json = message.getPayload();
         ObjectMapper mapper = new ObjectMapper();
         TransientMessageDto msg = mapper.readValue(json, TransientMessageDto.class);
-        String sender = msg.getSender();
-        String receiver = msg.getReceiver();
-        String sessionMblNo = (String) session.getAttributes().get("mblNo");
-        // MessageDto msgDto = new MessageDto();
-        if (sessionMblNo != null && sessionMblNo.equals(sender)) {
 
-            WebSocketSession receiverSession = users.get(receiver);
+        String sessionMblNo = (String) session.getAttributes().get("mblNo");
+        if (sessionMblNo != null && sessionMblNo.equals(msg.getSender())) {
+            WebSocketSession receiverSession = users.get(msg.getReceiver());
+            // Both Online
             if (receiverSession != null && receiverSession.isOpen()) {
+
                 receiverSession.sendMessage(new TextMessage(mapper.writeValueAsString(msg)));
-                System.out.println(mapper.writeValueAsString(msg));
-            } else {
-                System.out.println("receiver not found");
+
+                Messages storingMsg = new Messages();
+                storingMsg.setSender(msg.getSender());
+                storingMsg.setReceiver(msg.getReceiver());
+                storingMsg.setMsg(msg.getMessage());
+                storingMsg.setStatus(MessageStatus.DELIVERED);
+                storingMsg.setSentTime(LocalDateTime.now());
+                storingMsg.setDelieverdTime(LocalDateTime.now());
+                // storingMsg.setReceiverTime();
+                messagesRepo.save(storingMsg);
+
+                System.out.println(storingMsg);
+            }
+            // sender Online , Receiver Offline
+            else {
+                Messages storingMsg = new Messages();
+                storingMsg.setSender(msg.getSender());
+                storingMsg.setReceiver(msg.getReceiver());
+                storingMsg.setMsg(msg.getMessage());
+                storingMsg.setStatus(MessageStatus.SENT);
+                storingMsg.setSentTime(LocalDateTime.now());
+                storingMsg.setDelieverdTime(LocalDateTime.now());
+
+                messagesRepo.save(storingMsg);
+                System.out.println(storingMsg);
+                System.out.println("Reciever Offline");
             }
         } else {
-            System.out.println("Sender mismatch or unauthorized: msg sender=" + sender + ", session=" + sessionMblNo);
+            System.out.println(
+                    "Sender mismatch or unauthorized: msg sender=" + msg.getSender() + ", session=" + sessionMblNo);
         }
     }
 
