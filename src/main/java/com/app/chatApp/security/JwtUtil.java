@@ -26,7 +26,7 @@ public class JwtUtil {
                 .subject(user.getName())
                 .claim("mblNo", user.getMblNo())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
                 .signWith(getSignKey(), Jwts.SIG.HS256)
                 .compact();
     }

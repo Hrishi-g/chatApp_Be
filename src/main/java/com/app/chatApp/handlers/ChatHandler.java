@@ -2,6 +2,7 @@ package com.app.chatApp.handlers;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
@@ -9,8 +10,10 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.app.chatApp.dto.TransientMessageDto;
+import com.app.chatApp.repository.HomeMessageListRepo;
 import com.app.chatApp.repository.MessagesRepo;
 import com.app.chatApp.service.OneTimeTicketService;
+import com.app.chatApp.vo.HomeMessageList;
 import com.app.chatApp.vo.Messages;
 import com.app.chatApp.vo.enums.MessageStatus;
 
@@ -20,12 +23,14 @@ import tools.jackson.databind.ObjectMapper;
 public class ChatHandler extends TextWebSocketHandler {
 
     private final OneTimeTicketService ticketService;
-
     private MessagesRepo messagesRepo;
+    private HomeMessageListRepo homeMessageListRepo;
 
-    ChatHandler(OneTimeTicketService ticketService, MessagesRepo messagesRepo) {
+    ChatHandler(OneTimeTicketService ticketService, MessagesRepo messagesRepo,
+            HomeMessageListRepo homeMessageListRepo) {
         this.ticketService = ticketService;
         this.messagesRepo = messagesRepo;
+        this.homeMessageListRepo = homeMessageListRepo;
     }
 
     Map<String, WebSocketSession> users = new ConcurrentHashMap<>();
@@ -69,6 +74,23 @@ public class ChatHandler extends TextWebSocketHandler {
                 // storingMsg.setReceiverTime();
                 messagesRepo.save(storingMsg);
 
+                Optional<HomeMessageList> existingChat = homeMessageListRepo
+                        .checkIfUserExistInHomeMessageChat(msg.getSender(), msg.getReceiver());
+                if (existingChat.isEmpty()) {
+                    HomeMessageList homeMessageList = new HomeMessageList();
+                    homeMessageList.setSender(msg.getSender());
+                    homeMessageList.setReceiver(msg.getReceiver());
+                    homeMessageList.setLastMsg(msg.getMessage());
+                    homeMessageList.setStatus(MessageStatus.DELIVERED);
+                    homeMessageListRepo.save(homeMessageList);
+                } else {
+                    HomeMessageList homeMessageList = existingChat.get();
+                    homeMessageList.setLastMsg(msg.getMessage());
+                    homeMessageList.setStatus(MessageStatus.DELIVERED);
+                    homeMessageList.setLastMessageTime(LocalDateTime.now());
+                    homeMessageListRepo.save(homeMessageList); // UPDATE
+                }
+
                 System.out.println(storingMsg);
             }
             // sender Online , Receiver Offline
@@ -82,6 +104,22 @@ public class ChatHandler extends TextWebSocketHandler {
                 storingMsg.setDelieverdTime(LocalDateTime.now());
 
                 messagesRepo.save(storingMsg);
+                Optional<HomeMessageList> existingChat = homeMessageListRepo
+                        .checkIfUserExistInHomeMessageChat(msg.getSender(), msg.getReceiver());
+                if (existingChat.isEmpty()) {
+                    HomeMessageList homeMessageList = new HomeMessageList();
+                    homeMessageList.setSender(msg.getSender());
+                    homeMessageList.setReceiver(msg.getReceiver());
+                    homeMessageList.setLastMsg(msg.getMessage());
+                    homeMessageList.setStatus(MessageStatus.SENT);
+                    homeMessageListRepo.save(homeMessageList);
+                } else {
+                    HomeMessageList homeMessageList = existingChat.get();
+                    homeMessageList.setLastMsg(msg.getMessage());
+                    homeMessageList.setStatus(MessageStatus.SENT);
+                    homeMessageList.setLastMessageTime(LocalDateTime.now());
+                    homeMessageListRepo.save(homeMessageList); // UPDATE
+                }
                 System.out.println(storingMsg);
                 System.out.println("Reciever Offline");
             }

@@ -1,11 +1,15 @@
 package com.app.chatApp.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.app.chatApp.dto.ChatDto;
 import com.app.chatApp.dto.SecurityContextDto;
 import com.app.chatApp.service.UserService;
 
@@ -20,13 +24,17 @@ public class UserController {
     }
 
     @GetMapping("/chats")
-    public void getChats(@AuthenticationPrincipal SecurityContextDto userData) {
-        userService.getChats(userData.getMblNo());
+    public ResponseEntity<List<ChatDto>> getChats(@AuthenticationPrincipal SecurityContextDto userData) {
+        return userService.getChats(userData.getMblNo());
     }
 
     @GetMapping("/getNewUser")
-    public String getNewUser(@RequestParam String mob) {
+    public ResponseEntity<String> getNewUser(@RequestParam String mob) {
         return userService.getNewUser(mob);
     }
 
+    @GetMapping("/allHomeChats")
+    public ResponseEntity<?> getAllHomeChats(@AuthenticationPrincipal SecurityContextDto userData) {
+        return userService.getHomeMessageChat(userData.getMblNo());
+    }
 }
