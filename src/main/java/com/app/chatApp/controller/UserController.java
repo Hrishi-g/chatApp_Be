@@ -5,11 +5,13 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.chatApp.dto.ChatDto;
+import com.app.chatApp.dto.GetChatsRequestDto;
 import com.app.chatApp.dto.SecurityContextDto;
 import com.app.chatApp.service.UserService;
 
@@ -23,14 +25,15 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/chats")
-    public ResponseEntity<List<ChatDto>> getChats(@AuthenticationPrincipal SecurityContextDto userData) {
-        return userService.getChats(userData.getMblNo());
+    @PostMapping("/chats")
+    public ResponseEntity<List<ChatDto>> getChats(@AuthenticationPrincipal SecurityContextDto userData,
+            @RequestBody GetChatsRequestDto req) {
+        return userService.getChatsBtwnUsers(userData.getMblNo(), req.getReceiver());
     }
 
-    @GetMapping("/getNewUser")
-    public ResponseEntity<String> getNewUser(@RequestParam String mob) {
-        return userService.getNewUser(mob);
+    @PostMapping("/getNewUser")
+    public ResponseEntity<String> getNewUser(@RequestBody GetChatsRequestDto req) {
+        return userService.getNewUser(req.getReceiver());
     }
 
     @GetMapping("/allHomeChats")

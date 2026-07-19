@@ -27,8 +27,8 @@ public class UserService {
         this.homeMessageListRepo = homeMessageListRepo;
     }
 
-    public ResponseEntity<List<ChatDto>> getChats(String mobNO) {
-        List<ChatDto> messages = messagesRepo.findAllBySenderMobNO(mobNO);
+    public ResponseEntity<List<ChatDto>> getChatsBtwnUsers(String sender, String receiver) {
+        List<ChatDto> messages = messagesRepo.findAllChatsBtwnUsers(sender, receiver);
         return ResponseEntity.ok(messages);
     }
 
@@ -44,9 +44,9 @@ public class UserService {
     public ResponseEntity<String> getNewUser(String mobNO) {
         Optional<String> receiver = registeredUsersRepo.findByMblNo(mobNO);
         if (receiver.isPresent()) {
-            return ResponseEntity.ok(receiver.get());
+            return ResponseEntity.ok("User Found");
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found");
+            return ResponseEntity.ok("User Not Found");
         }
     }
 }

@@ -14,4 +14,15 @@ public interface MessagesRepo extends JpaRepository<Messages, Long> {
 
     @Query("SELECT new com.app.chatApp.dto.ChatDto(m.sender, m.receiver, m.msg,m.status, m.createdTime, m.delieverdTime, m.receiverTime) FROM Messages m WHERE m.sender=:mobNO ORDER BY m.createdTime DESC")
     List<ChatDto> findAllBySenderMobNO(@Param("mobNO") String mobNO);
+
+    @Query("""
+            SELECT new com.app.chatApp.dto.ChatDto(m.sender, m.receiver, m.msg,m.status, m.createdTime, m.delieverdTime, m.receiverTime)
+            FROM Messages m
+            WHERE (m.sender = :sender AND m.receiver = :receiver)
+            OR (m.sender = :receiver AND m.receiver = :sender)
+            ORDER BY m.msgId ASC
+            """)
+    List<ChatDto> findAllChatsBtwnUsers(
+            @Param("sender") String sender,
+            @Param("receiver") String receiver);
 }
