@@ -1,6 +1,7 @@
 package com.app.chatApp.dto;
 
 public class TransientMessageDto {
+    private String type;
     private String sender;
     private String receiver;
     private String message;
@@ -9,11 +10,20 @@ public class TransientMessageDto {
     public TransientMessageDto() {
     }
 
-    public TransientMessageDto(String sender, String receiver, String message) {
+    public TransientMessageDto(String type, String sender, String receiver, String message) {
+        this.type = type;
         this.sender = sender;
         this.receiver = receiver;
         this.message = message;
         this.timeStamp = System.currentTimeMillis();
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getSender() {

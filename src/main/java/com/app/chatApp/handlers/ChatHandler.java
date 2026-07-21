@@ -18,10 +18,12 @@ public class ChatHandler extends TextWebSocketHandler {
 
     private final OneTimeTicketService ticketService;
     private UtilityHandler utilityHandler;
+    private final ObjectMapper objectMapper;
 
-    ChatHandler(OneTimeTicketService ticketService, UtilityHandler utilityHandler) {
+    ChatHandler(OneTimeTicketService ticketService, UtilityHandler utilityHandler, ObjectMapper objectMapper) {
         this.ticketService = ticketService;
         this.utilityHandler = utilityHandler;
+        this.objectMapper = objectMapper;
     }
 
     Map<String, WebSocketSession> users = new ConcurrentHashMap<>();
@@ -43,22 +45,24 @@ public class ChatHandler extends TextWebSocketHandler {
     }
 
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        String json = message.getPayload();
-        ObjectMapper mapper = new ObjectMapper();
-        TransientMessageDto msg = mapper.readValue(json, TransientMessageDto.class);
+
+        TransientMessageDto msg = objectMapper.readValue(message.getPayload(), TransientMessageDto.class);
 
         String sessionMblNo = (String) session.getAttributes().get("mblNo");
 
         if (sessionMblNo != null && sessionMblNo.equals(msg.getSender())) {
+            msg.setType("CHAT");
             WebSocketSession receiverSession = users.get(msg.getReceiver());
             // Both Online
             if (receiverSession != null && receiverSession.isOpen()) {
-
-                receiverSession.sendMessage(new TextMessage(mapper.writeValueAsString(msg)));
                 // save message with delivered status
                 utilityHandler.saveMessage(msg, MessageStatus.DELIVERED);
                 // updating last msg
                 utilityHandler.updateHomeMessageList(msg, MessageStatus.DELIVERED);
+
+                String chatJson = objectMapper.writeValueAsString(msg);
+                receiverSession.sendMessage(new TextMessage(chatJson));
+                session.sendMessage(new TextMessage(chatJson));
 
                 System.out.println("Both Online");
             }
@@ -68,6 +72,9 @@ public class ChatHandler extends TextWebSocketHandler {
                 utilityHandler.saveMessage(msg, MessageStatus.SENT);
                 // updating last msg
                 utilityHandler.updateHomeMessageList(msg, MessageStatus.SENT);
+
+                String chatJson = objectMapper.writeValueAsString(msg);
+                session.sendMessage(new TextMessage(chatJson));
 
                 System.out.println("Receiver Offline");
             }

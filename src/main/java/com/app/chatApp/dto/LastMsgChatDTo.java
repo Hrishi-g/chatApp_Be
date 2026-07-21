@@ -5,35 +5,43 @@ import java.time.LocalDateTime;
 import com.app.chatApp.vo.enums.MessageStatus;
 
 public class LastMsgChatDTo {
-    String sender;
-    String receiver;
+    String chatUser;
     String lastMsg;
     MessageStatus status;
     LocalDateTime lastMessageTime;
+    String chatUserName;
+    String imgUrl;
 
-    public LastMsgChatDTo(String sender, String receiver, String lastMsg, MessageStatus status,
+    public LastMsgChatDTo(String chatUser, String lastMsg, MessageStatus status,
             LocalDateTime lastMessageTime) {
-        this.sender = sender;
-        this.receiver = receiver;
+        this.chatUser = chatUser;
         this.lastMsg = lastMsg;
         this.status = status;
         this.lastMessageTime = lastMessageTime;
     }
 
-    public String getSender() {
-        return sender;
+    public String getChatUser() {
+        return chatUser;
     }
 
-    public void setSender(String sender) {
-        this.sender = sender;
+    public void setChatUser(String chatUser) {
+        this.chatUser = chatUser;
     }
 
-    public String getReceiver() {
-        return receiver;
+    public String getChatUserName() {
+        return chatUserName;
     }
 
-    public void setReceiver(String receiver) {
-        this.receiver = receiver;
+    public void setChatUserName(String chatUserName) {
+        this.chatUserName = chatUserName;
+    }
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
     }
 
     public String getLastMsg() {

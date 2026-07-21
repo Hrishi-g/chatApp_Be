@@ -1,7 +1,9 @@
 package com.app.chatApp.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import com.app.chatApp.dto.LastMsgChatDTo;
 import com.app.chatApp.repository.HomeMessageListRepo;
 import com.app.chatApp.repository.MessagesRepo;
 import com.app.chatApp.repository.RegisteredUsersRepo;
+import com.app.chatApp.vo.RegisteredUsers;
 
 @Service
 public class UserService {
@@ -34,11 +37,36 @@ public class UserService {
 
     public ResponseEntity<?> getHomeMessageChat(String mobNO) {
         List<LastMsgChatDTo> messages = homeMessageListRepo.findLastMsgChatList(mobNO);
-        if (!messages.isEmpty()) {
-            return ResponseEntity.ok(messages);
-        } else {
+        if (messages.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User Not Found");
         }
+
+        // Extract unique partner mobile numbers
+        List<String> partnerMblNos = messages.stream()
+                .filter(msg -> msg != null)
+                .map(msg -> msg.getChatUser())
+                .filter(mbl -> mbl != null)
+                .distinct()
+                .toList();
+
+        // Bulk fetch users
+        List<RegisteredUsers> users = registeredUsersRepo.findByMblNoIn(partnerMblNos);
+
+        // Map mobile number to RegisteredUsers
+        Map<String, RegisteredUsers> userMap = users.stream()
+                .filter(u -> u != null && u.getMblNo() != null)
+                .collect(Collectors.toMap(u -> u.getMblNo(), u -> u));
+
+        // Populate name and image details in DTOs
+        for (LastMsgChatDTo msg : messages) {
+            RegisteredUsers u = userMap.get(msg.getChatUser());
+            if (u != null) {
+                msg.setChatUserName(u.getName());
+                msg.setImgUrl(u.getImgUrl());
+            }
+        }
+
+        return ResponseEntity.ok(messages);
     }
 
     public ResponseEntity<String> getNewUser(String mobNO) {

@@ -4,6 +4,8 @@ import org.springframework.stereotype.Repository;
 
 import com.app.chatApp.vo.RegisteredUsers;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,5 +18,7 @@ public interface RegisteredUsersRepo extends JpaRepository<RegisteredUsers, Long
     Optional<String> findByMblNo(String mblNo);
 
     Optional<RegisteredUsers> findUserByMblNo(String mblNo);
+
+    List<RegisteredUsers> findByMblNoIn(Collection<String> mblNos);
 
 }

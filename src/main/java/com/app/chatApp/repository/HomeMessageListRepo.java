@@ -14,20 +14,28 @@ import com.app.chatApp.vo.HomeMessageList;
 @Repository
 public interface HomeMessageListRepo extends JpaRepository<HomeMessageList, Long> {
 
-    @Query("""
-            SELECT new com.app.chatApp.dto.LastMsgChatDTo(m.sender, m.receiver, m.lastMsg, m.status, m.lastMessageTime)
-            FROM HomeMessageList m
-            WHERE (m.sender = :mobNo OR m.receiver = :mobNo)
-            ORDER BY m.lastMessageTime DESC
-            """)
-    List<LastMsgChatDTo> findLastMsgChatList(@Param("mobNo") String mobNo);
+        @Query("""
+                        SELECT new com.app.chatApp.dto.LastMsgChatDTo(
+                        CASE
+                            WHEN m.sender = :mobNo THEN m.receiver
+                            ELSE m.sender
+                        END,
+                        m.lastMsg,
+                        m.status,
+                        m.lastMessageTime
+                        )
+                        FROM HomeMessageList m
+                        WHERE (m.sender = :mobNo OR m.receiver = :mobNo)
+                        ORDER BY m.lastMessageTime DESC
+                        """)
+        List<LastMsgChatDTo> findLastMsgChatList(@Param("mobNo") String mobNo);
 
-    @Query("""
-            SELECT m
-            FROM HomeMessageList m
-            WHERE (m.sender = :sender AND m.receiver = :receiver)
-            OR (m.sender = :receiver AND m.receiver = :sender)
-            """)
-    Optional<HomeMessageList> checkIfUserExistInHomeMessageChat(@Param("sender") String sender,
-            @Param("receiver") String receiver);
+        @Query("""
+                        SELECT m
+                        FROM HomeMessageList m
+                        WHERE (m.sender = :sender AND m.receiver = :receiver)
+                        OR (m.sender = :receiver AND m.receiver = :sender)
+                        """)
+        Optional<HomeMessageList> checkIfUserExistInHomeMessageChat(@Param("sender") String sender,
+                        @Param("receiver") String receiver);
 }

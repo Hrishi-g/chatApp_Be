@@ -25,6 +25,11 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<SecurityContextDto> getMe(@AuthenticationPrincipal SecurityContextDto user) {
+        return ResponseEntity.ok(user);
+    }
+
     @PostMapping("/chats")
     public ResponseEntity<List<ChatDto>> getChats(@AuthenticationPrincipal SecurityContextDto userData,
             @RequestBody GetChatsRequestDto req) {
