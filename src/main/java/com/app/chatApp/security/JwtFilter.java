@@ -42,7 +42,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
             }
         }
-
         if (token == null) {
             if (request.getParameter("user") != null) {
                 token = request.getParameter("user");

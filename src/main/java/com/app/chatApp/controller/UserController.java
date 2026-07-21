@@ -28,6 +28,7 @@ public class UserController {
     @PostMapping("/chats")
     public ResponseEntity<List<ChatDto>> getChats(@AuthenticationPrincipal SecurityContextDto userData,
             @RequestBody GetChatsRequestDto req) {
+        System.out.println("req " + req.getReceiver());
         return userService.getChatsBtwnUsers(userData.getMblNo(), req.getReceiver());
     }
 

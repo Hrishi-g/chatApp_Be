@@ -17,6 +17,5 @@ public class CookieUtil {
                 .maxAge(3600)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
     }
 }

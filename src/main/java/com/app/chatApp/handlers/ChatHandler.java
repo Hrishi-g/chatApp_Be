@@ -1,8 +1,6 @@
 package com.app.chatApp.handlers;
 
-import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
@@ -10,11 +8,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.app.chatApp.dto.TransientMessageDto;
-import com.app.chatApp.repository.HomeMessageListRepo;
-import com.app.chatApp.repository.MessagesRepo;
 import com.app.chatApp.service.OneTimeTicketService;
-import com.app.chatApp.vo.HomeMessageList;
-import com.app.chatApp.vo.Messages;
 import com.app.chatApp.vo.enums.MessageStatus;
 
 import tools.jackson.databind.ObjectMapper;
@@ -23,14 +17,11 @@ import tools.jackson.databind.ObjectMapper;
 public class ChatHandler extends TextWebSocketHandler {
 
     private final OneTimeTicketService ticketService;
-    private MessagesRepo messagesRepo;
-    private HomeMessageListRepo homeMessageListRepo;
+    private UtilityHandler utilityHandler;
 
-    ChatHandler(OneTimeTicketService ticketService, MessagesRepo messagesRepo,
-            HomeMessageListRepo homeMessageListRepo) {
+    ChatHandler(OneTimeTicketService ticketService, UtilityHandler utilityHandler) {
         this.ticketService = ticketService;
-        this.messagesRepo = messagesRepo;
-        this.homeMessageListRepo = homeMessageListRepo;
+        this.utilityHandler = utilityHandler;
     }
 
     Map<String, WebSocketSession> users = new ConcurrentHashMap<>();
@@ -57,71 +48,28 @@ public class ChatHandler extends TextWebSocketHandler {
         TransientMessageDto msg = mapper.readValue(json, TransientMessageDto.class);
 
         String sessionMblNo = (String) session.getAttributes().get("mblNo");
+
         if (sessionMblNo != null && sessionMblNo.equals(msg.getSender())) {
             WebSocketSession receiverSession = users.get(msg.getReceiver());
             // Both Online
             if (receiverSession != null && receiverSession.isOpen()) {
 
                 receiverSession.sendMessage(new TextMessage(mapper.writeValueAsString(msg)));
+                // save message with delivered status
+                utilityHandler.saveMessage(msg, MessageStatus.DELIVERED);
+                // updating last msg
+                utilityHandler.updateHomeMessageList(msg, MessageStatus.DELIVERED);
 
-                Messages storingMsg = new Messages();
-                storingMsg.setSender(msg.getSender());
-                storingMsg.setReceiver(msg.getReceiver());
-                storingMsg.setMsg(msg.getMessage());
-                storingMsg.setStatus(MessageStatus.DELIVERED);
-                storingMsg.setSentTime(LocalDateTime.now());
-                storingMsg.setDelieverdTime(LocalDateTime.now());
-                // storingMsg.setReceiverTime();
-                messagesRepo.save(storingMsg);
-
-                Optional<HomeMessageList> existingChat = homeMessageListRepo
-                        .checkIfUserExistInHomeMessageChat(msg.getSender(), msg.getReceiver());
-                if (existingChat.isEmpty()) {
-                    HomeMessageList homeMessageList = new HomeMessageList();
-                    homeMessageList.setSender(msg.getSender());
-                    homeMessageList.setReceiver(msg.getReceiver());
-                    homeMessageList.setLastMsg(msg.getMessage());
-                    homeMessageList.setStatus(MessageStatus.DELIVERED);
-                    homeMessageListRepo.save(homeMessageList);
-                } else {
-                    HomeMessageList homeMessageList = existingChat.get();
-                    homeMessageList.setLastMsg(msg.getMessage());
-                    homeMessageList.setStatus(MessageStatus.DELIVERED);
-                    homeMessageList.setLastMessageTime(LocalDateTime.now());
-                    homeMessageListRepo.save(homeMessageList); // UPDATE
-                }
-
-                System.out.println(storingMsg);
+                System.out.println("Both Online");
             }
             // sender Online , Receiver Offline
             else {
-                Messages storingMsg = new Messages();
-                storingMsg.setSender(msg.getSender());
-                storingMsg.setReceiver(msg.getReceiver());
-                storingMsg.setMsg(msg.getMessage());
-                storingMsg.setStatus(MessageStatus.SENT);
-                storingMsg.setSentTime(LocalDateTime.now());
-                storingMsg.setDelieverdTime(LocalDateTime.now());
+                // save message with sent status
+                utilityHandler.saveMessage(msg, MessageStatus.SENT);
+                // updating last msg
+                utilityHandler.updateHomeMessageList(msg, MessageStatus.SENT);
 
-                messagesRepo.save(storingMsg);
-                Optional<HomeMessageList> existingChat = homeMessageListRepo
-                        .checkIfUserExistInHomeMessageChat(msg.getSender(), msg.getReceiver());
-                if (existingChat.isEmpty()) {
-                    HomeMessageList homeMessageList = new HomeMessageList();
-                    homeMessageList.setSender(msg.getSender());
-                    homeMessageList.setReceiver(msg.getReceiver());
-                    homeMessageList.setLastMsg(msg.getMessage());
-                    homeMessageList.setStatus(MessageStatus.SENT);
-                    homeMessageListRepo.save(homeMessageList);
-                } else {
-                    HomeMessageList homeMessageList = existingChat.get();
-                    homeMessageList.setLastMsg(msg.getMessage());
-                    homeMessageList.setStatus(MessageStatus.SENT);
-                    homeMessageList.setLastMessageTime(LocalDateTime.now());
-                    homeMessageListRepo.save(homeMessageList); // UPDATE
-                }
-                System.out.println(storingMsg);
-                System.out.println("Reciever Offline");
+                System.out.println("Receiver Offline");
             }
         } else {
             System.out.println(
